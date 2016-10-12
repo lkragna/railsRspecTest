@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe TokenController, type: :controller do
 
   describe "POST #new" do
-    request_info =   {:credit_card_number => '1234567890123456'}
+    request_info =   {:credit_card_number => '5134567890123456'}
 
     it "returns http success" do
       user = FactoryGirl.create(:user, :user_id => 32323)
@@ -41,9 +41,11 @@ RSpec.describe TokenController, type: :controller do
       user = FactoryGirl.create(:user)
       @request.env["HTTP_USER_ID"] = 4321
       @request.env["HTTP_SECRET_KEY"] = 'ppppppp'
-      request_info["credit_card_number"] = "12312312"
-      post :new, request_info
+      test_credit_card = request_info.clone
+      test_credit_card["credit_card_number"] = "12312312"
+      post :new, test_credit_card
       expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)).to include("message" => 'invalid credit card number')
     end
 
 

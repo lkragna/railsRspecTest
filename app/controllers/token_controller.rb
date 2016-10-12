@@ -28,12 +28,22 @@ class TokenController < ApplicationController
   end
 
   def validate_credit_card_number(number)
-    print "tarjeta #{number}"
-    if (number == nil || !(number =~ /(([0-9]{11,12})([0-9]{4}))/) )
+    if (number == nil || /^[0-9]{15,16}$/.match(number) == nil )
        return false;
     end
 
+    credit_card_type = nil
 
+    if (/^34|37.*$/.match(number) != nil )
+      credit_card_type = 'AMEX'
+    elsif (/^4.*$/.match(number) != nil )
+      credit_card_type = 'VISA'
+    elsif (/^51|52|53|54|55.*$/.match(number) != nil )
+      credit_card_type = 'MASTERCARD'
+    else
+      credit_card_type = nil
+      return false
+    end
 
     true
   end
