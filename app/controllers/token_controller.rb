@@ -10,8 +10,16 @@ class TokenController < ApplicationController
       return render json: {:message => 'invalid credit card number'}, status: :bad_request
     end
 
+    if !valid_exp_date(params['exp_date'])
+      return render json: {:message => 'invalid date'}, status: :bad_request
+    end
 
-    var = {:response_code => params['asdf'],:content_type => request.headers["Content-Type"]}
+    if !valid_name(params['name'])
+      return render json: {:message => 'invalid name'}, status: :bad_request
+    end
+
+    create_token(params)
+    var = {:token => @token_response}
     render json: var, status: :ok
   end
 
@@ -24,7 +32,6 @@ class TokenController < ApplicationController
   private
   def valid_user(user_id, secret_key)
     @user = User.where(user_id: user_id, secret_key: secret_key)
-
   end
 
   def validate_credit_card_number(number)
@@ -44,7 +51,34 @@ class TokenController < ApplicationController
       credit_card_type = nil
       return false
     end
+    true
+  end
+
+  def valid_exp_date(exp_date)
+    if exp_date == nil
+      return false
+    end
+    valid_date = /^(([0-9]{2})\/([0-9]{2}))$/.match(exp_date)
+
+    if (valid_date == nil || (valid_date[2].to_i < 1 || valid_date[2].to_i > 12) || (valid_date[3].to_i < 16))
+      return false
+    end
+    true
+  end
+
+  def valid_name(name)
+    valid_name = /^[A-za-z\ ]*$/.match(name)
+    if(valid_name == nil)
+      return false
+    end
 
     true
+
+  end
+
+  def create_token(params)
+    token_card = TokenCard.new(params)
+    token_card.save
+    @token_response = token_card.token
   end
 end

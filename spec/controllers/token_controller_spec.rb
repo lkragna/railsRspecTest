@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe TokenController, type: :controller do
 
   describe "POST #new" do
-    request_info =   {:credit_card_number => '5134567890123456'}
+    request_info =   {:credit_card_number => '5134567890123456', :exp_date=> '11/18', :name => "Ramses Carbajal"}
 
     it "returns http success" do
       user = FactoryGirl.create(:user)
@@ -46,6 +46,54 @@ RSpec.describe TokenController, type: :controller do
       post :new, test_credit_card
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid credit card number')
+    end
+
+    it "valid date" do
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      post :new, request_info
+      expect(response).to have_http_status(:success)
+    end
+
+    it "invalid date" do
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      test_credit_card = request_info.clone
+      test_credit_card["exp_date"] = "11/11"
+      post :new, test_credit_card
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)).to include("message" => 'invalid date')
+    end
+
+    it "valid name" do
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      post :new, request_info
+      expect(response).to have_http_status(:success)
+
+    end
+
+    it "invalid name" do
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      test_credit_card = request_info.clone
+      test_credit_card["name"] = "ramses2_asdf3 "
+      post :new, test_credit_card
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)).to include("message" => 'invalid name')
+    end
+
+    it "create token" do
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      post :new, request_info
+      expect(response).to have_http_status(:success)
+      expect(JSON.parse(response.body)).to include("token" => /.*/)
     end
 
 
