@@ -49,3 +49,5 @@ end
 
 
 gem 'redis-rails'
+gem 'mongoid'
+gem 'bson_ext'

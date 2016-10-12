@@ -6,11 +6,11 @@ RSpec.describe TokenController, type: :controller do
     request_info =   {:credit_card_number => '5134567890123456'}
 
     it "returns http success" do
-      user = FactoryGirl.create(:user, :user_id => 32323)
-      @request.env["HTTP_USER_ID"] = 4321
-      @request.env["HTTP_SECRET_KEY"] = 'ppppppp'
+      user = FactoryGirl.create(:user)
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       post :new, request_info
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:success)
     end
     it "invalid user" do
       user = FactoryGirl.create(:user, :user_id => 32323)
@@ -23,24 +23,24 @@ RSpec.describe TokenController, type: :controller do
     it "valid user" do
       user = FactoryGirl.create(:user, name: "que es esto")
 
-      @request.env["HTTP_USER_ID"] = 4321
-      @request.env["HTTP_SECRET_KEY"] = 'ppppppp'
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       post :new, request_info
       expect(response).to have_http_status(:success)
     end
 
     it "valid credit Card number" do
       user = FactoryGirl.create(:user)
-      @request.env["HTTP_USER_ID"] = 4321
-      @request.env["HTTP_SECRET_KEY"] = 'ppppppp'
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       post :new, request_info
       expect(response).to have_http_status(:success)
     end
 
     it "invalid credit Card number" do
       user = FactoryGirl.create(:user)
-      @request.env["HTTP_USER_ID"] = 4321
-      @request.env["HTTP_SECRET_KEY"] = 'ppppppp'
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       test_credit_card = request_info.clone
       test_credit_card["credit_card_number"] = "12312312"
       post :new, test_credit_card
