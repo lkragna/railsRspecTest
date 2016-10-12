@@ -1,6 +1,7 @@
 class TokenController < ApplicationController
   def new
-    user = valid_user(request.headers["user_id"], request.headers["secret_key"])
+
+    user = valid_user(request.env["HTTP_USER_ID"], request.env["HTTP_SECRET_KEY"])
     if !user.any?
       return render json: {:message => 'invalid user'}, status: :unauthorized
     end
