@@ -45,10 +45,10 @@ RSpec.describe PurchaseController, type: :controller do
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
       request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
-                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["token"] = "nada"
-      post :generate, test_request
+                      :credit_card_number=>"nada", :exp_date=> '11/18'}
+      invalid_request = request_info.clone
+      invalid_request["token"] = '123ww'
+      post :generate, invalid_request
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid token')
     end
@@ -67,11 +67,10 @@ RSpec.describe PurchaseController, type: :controller do
       @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
-      request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
+      request_info = {:token => token_test, :currency => 'meh', :amount => '1234.12', :cvc => '123',
                       :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["currency"] = "meh"
-      post :generate, test_request
+
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid currency')
     end
@@ -92,11 +91,9 @@ RSpec.describe PurchaseController, type: :controller do
       @request.env["HTTP_SECRET_KEY"] = 'qwerty'
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
-      request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
+      request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '12345',
                       :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["cvc"] = "12345"
-      post :generate, test_request
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid cvc')
     end
@@ -118,11 +115,10 @@ RSpec.describe PurchaseController, type: :controller do
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
       request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
-                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["credit_card_number"] = "1211212"
+                      :credit_card_number=>"1211212", :exp_date=> '11/18'}
 
-      post :generate, test_request
+
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid credit card number')
     end
@@ -134,10 +130,9 @@ RSpec.describe PurchaseController, type: :controller do
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
       request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
-                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["credit_card_number"] = "5134567890123411"
-      post :generate, test_request
+                      :credit_card_number=>"5134567890123411", :exp_date=> '11/18'}
+
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid credit card number, the credit card is diferent in the credit card token')
     end
@@ -159,12 +154,23 @@ RSpec.describe PurchaseController, type: :controller do
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
       request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
-                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["exp_date"] = "11/11"
-      post :generate, test_request
+                      :credit_card_number=>"5134567890123456", :exp_date=> '11/11'}
+
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid date')
+    end
+
+    it "invalid amount" do
+      @request.env["HTTP_USER_ID"] = 1234
+      @request.env["HTTP_SECRET_KEY"] = 'qwerty'
+      token_card = TokenCard.new(nil);
+      token_test = token_card.test_token(nil)
+      request_info = {:token => token_test, :currency => 'MXN', :amount => 'd1234.12', :cvc => '123',
+                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
+      post :generate, request_info
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)).to include("message" => 'invalid amount')
     end
 
     it "the date is diferent in the credit card token" do
@@ -173,10 +179,9 @@ RSpec.describe PurchaseController, type: :controller do
       token_card = TokenCard.new(nil);
       token_test = token_card.test_token(nil)
       request_info = {:token => token_test, :currency => 'MXN', :amount => '1234.12', :cvc => '123',
-                      :credit_card_number=>"5134567890123456", :exp_date=> '11/18'}
-      test_request = request_info.clone
-      test_request["exp_date"] = "09/20"
-      post :generate, test_request
+                      :credit_card_number=>"5134567890123456", :exp_date=> '09/20'}
+
+      post :generate, request_info
       expect(response).to have_http_status(:bad_request)
       expect(JSON.parse(response.body)).to include("message" => 'invalid exp date, the exp date is diferent in the credit card token')
     end

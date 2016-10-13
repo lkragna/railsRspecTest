@@ -29,7 +29,11 @@ class PurchaseController < ApplicationController
       return render json: {:message => 'invalid date'}, status: :bad_request
     end
 
-    #exp_date
+    if !validate_amount(params['amount'])
+      return render json: {:message => 'invalid amount'}, status: :bad_request
+    end
+
+
 
     if !validate_date_with_token(params['exp_date'], credit_card_data["exp_date"])
       return render json: {:message => 'invalid exp date, the exp date is diferent in the credit card token'}, status: :bad_request
@@ -77,6 +81,13 @@ class PurchaseController < ApplicationController
   def validate_date_with_token(date, token_date)
     date.eql? token_date
 
+  end
+
+  def validate_amount(amount)
+    if !/^[0-9]{1,15}\.[0-9]{2,3}$/.match(amount)
+      return false
+    end
+    true
   end
 
   def process_purchase(params)
